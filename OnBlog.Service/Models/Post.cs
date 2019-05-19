@@ -15,6 +15,10 @@ namespace OnBlog.Service.Models
         public string Title { get; set; }
 
         [Required]
+        [MaxLength(150)]
+        public string Slug { get; set; }
+
+        [Required]
         [MaxLength(250)]
         public string Summary { get; set; }
 

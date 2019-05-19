@@ -10,7 +10,7 @@ using OnBlog.Service.Data;
 namespace OnBlog.Service.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190519144040_InitialMigration")]
+    [Migration("20190519185556_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,9 @@ namespace OnBlog.Service.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired();
+
                     b.Property<string>("Email")
                         .HasMaxLength(256);
 
@@ -114,6 +117,8 @@ namespace OnBlog.Service.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -182,25 +187,6 @@ namespace OnBlog.Service.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("OnBlog.Service.Models.ApplicationUser", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(50);
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(25);
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ApplicationUsers");
-                });
-
             modelBuilder.Entity("OnBlog.Service.Models.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -210,9 +196,13 @@ namespace OnBlog.Service.Migrations
                     b.Property<string>("Body")
                         .IsRequired();
 
-                    b.Property<int?>("OwnerId");
+                    b.Property<string>("OwnerId");
 
                     b.Property<DateTime>("PostedAt");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(150);
 
                     b.Property<string>("Summary")
                         .IsRequired()
@@ -246,6 +236,21 @@ namespace OnBlog.Service.Migrations
                     b.HasIndex("PostId");
 
                     b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("OnBlog.Service.Models.ApplicationUser", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50);
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(25);
+
+                    b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
