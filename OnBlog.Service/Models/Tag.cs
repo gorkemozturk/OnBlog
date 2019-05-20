@@ -13,7 +13,5 @@ namespace OnBlog.Service.Models
         [Required]
         [MaxLength(25)]
         public string TagName { get; set; }
-
-        public Post Post { get; set; }
     }
 }

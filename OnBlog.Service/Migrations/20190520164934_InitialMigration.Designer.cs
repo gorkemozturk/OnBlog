@@ -10,7 +10,7 @@ using OnBlog.Service.Data;
 namespace OnBlog.Service.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190519185556_InitialMigration")]
+    [Migration("20190520164934_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -196,7 +196,7 @@ namespace OnBlog.Service.Migrations
                     b.Property<string>("Body")
                         .IsRequired();
 
-                    b.Property<string>("OwnerId");
+                    b.Property<bool>("IsPublished");
 
                     b.Property<DateTime>("PostedAt");
 
@@ -212,11 +212,32 @@ namespace OnBlog.Service.Migrations
                         .IsRequired()
                         .HasMaxLength(150);
 
+                    b.Property<string>("UserId");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Posts");
+                });
+
+            modelBuilder.Entity("OnBlog.Service.Models.PostTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("PostId");
+
+                    b.Property<int>("TagId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("PostTags");
                 });
 
             modelBuilder.Entity("OnBlog.Service.Models.Tag", b =>
@@ -225,15 +246,11 @@ namespace OnBlog.Service.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("PostId");
-
                     b.Property<string>("TagName")
                         .IsRequired()
                         .HasMaxLength(25);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PostId");
 
                     b.ToTable("Tags");
                 });
@@ -302,14 +319,20 @@ namespace OnBlog.Service.Migrations
                 {
                     b.HasOne("OnBlog.Service.Models.ApplicationUser", "Owner")
                         .WithMany()
-                        .HasForeignKey("OwnerId");
+                        .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("OnBlog.Service.Models.Tag", b =>
+            modelBuilder.Entity("OnBlog.Service.Models.PostTag", b =>
                 {
                     b.HasOne("OnBlog.Service.Models.Post", "Post")
                         .WithMany("Tags")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("OnBlog.Service.Models.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

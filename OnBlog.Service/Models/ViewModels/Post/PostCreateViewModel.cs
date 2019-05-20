@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OnBlog.Service.Models
+namespace OnBlog.Service.Models.ViewModels.Post
 {
-    public class Post
+    public class PostCreateViewModel
     {
-        public int Id { get; set; }
         public string UserId { get; set; }
 
         [Required]
@@ -29,8 +27,6 @@ namespace OnBlog.Service.Models
         public DateTime PostedAt { get; set; }
         public bool IsPublished { get; set; }
 
-        [ForeignKey("UserId")]
-        public ApplicationUser Owner { get; set; }
-        public ICollection<PostTag> Tags { get; set; }
+        public ICollection<int> Tags { get; set; }
     }
 }
