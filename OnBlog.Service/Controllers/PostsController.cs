@@ -45,14 +45,20 @@ namespace OnBlog.Service.Controllers
 
         // PUT: api/Posts/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPost(int id, Post post)
+        public async Task<IActionResult> PutPost(int id, PostUpdateViewModel model)
         {
-            if (id != post.Id)
+            if (id != model.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(post).State = EntityState.Modified;
+            var post = await _context.Posts.FindAsync(id);
+
+            post.Title = model.Title;
+            post.Slug = model.Slug;
+            post.Summary = model.Summary;
+            post.Body = model.Body;
+            post.IsPublished = model.IsPublished;
 
             try
             {
@@ -75,7 +81,7 @@ namespace OnBlog.Service.Controllers
 
         // POST: api/Posts
         [HttpPost]
-        public async Task<ActionResult<Post>> PostPost(PostCreateViewModel model)
+        public async Task<ActionResult<PostCreateViewModel>> PostPost(PostCreateViewModel model)
         {
             var post = new Post()
             {
@@ -100,7 +106,7 @@ namespace OnBlog.Service.Controllers
 
             await _context.SaveChangesAsync();
 
-            return post;
+            return model;
         }
 
         // DELETE: api/Posts/5
