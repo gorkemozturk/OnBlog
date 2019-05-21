@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using OnBlog.Service.Data;
 using OnBlog.Service.Models;
 using OnBlog.Service.Models.ViewModels.Post;
+using OnBlog.Service.Models.ViewModels.Tag;
 
 namespace OnBlog.Service.Controllers
 {
@@ -24,16 +25,42 @@ namespace OnBlog.Service.Controllers
 
         // GET: api/Posts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Post>>> GetPosts()
+        public async Task<ActionResult<IEnumerable<PostListViewModel>>> GetPosts()
         {
-            return await _context.Posts.ToListAsync();
+            return await _context.Posts.Include(p => p.Owner).Select(p => new PostListViewModel
+            {
+                Id = p.Id,
+                Title = p.Title,
+                Slug = p.Slug,
+                Summary = p.Summary,
+                PostedAt = p.PostedAt,
+                IsPublished = p.IsPublished,
+                Owner = p.Owner.FullName(),
+                Tags = p.Tags.Select(t => new TagViewModel {
+                    TagName = t.Tag.TagName
+                })
+            }).ToListAsync();
         }
 
         // GET: api/Posts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Post>> GetPost(int id)
+        public async Task<ActionResult<PostDetailViewModel>> GetPost(int id)
         {
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts.Include(p => p.Owner).Select(p => new PostDetailViewModel
+            {
+                Id = p.Id,
+                Title = p.Title,
+                Slug = p.Slug,
+                Summary = p.Summary,
+                Body = p.Body,
+                PostedAt = p.PostedAt,
+                Owner = p.Owner.FullName(),
+                IsPublished = p.IsPublished,
+                Tags = p.Tags.Select(t => new TagViewModel
+                {
+                    TagName = t.Tag.TagName
+                })
+            }).FirstOrDefaultAsync(p => p.Id == id);
 
             if (post == null)
             {
@@ -52,13 +79,29 @@ namespace OnBlog.Service.Controllers
                 return BadRequest();
             }
 
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts.Include(p => p.Tags).FirstOrDefaultAsync(p => p.Id == id);
+
+            if (post == null)
+            {
+                return NotFound();
+            }
 
             post.Title = model.Title;
             post.Slug = model.Slug;
             post.Summary = model.Summary;
             post.Body = model.Body;
             post.IsPublished = model.IsPublished;
+
+            foreach (var tag in post.Tags)
+            {
+                _context.PostTags.Remove(tag);
+            }
+
+            foreach (var t in model.Tags)
+            {
+                var postTag = new PostTag() { PostId = post.Id, TagId = t };
+                _context.PostTags.Add(postTag);
+            }
 
             try
             {
@@ -96,11 +139,9 @@ namespace OnBlog.Service.Controllers
 
             _context.Posts.Add(post);
 
-            foreach (var id in model.Tags)
+            foreach (var t in model.Tags)
             {
-                var tag = await _context.Tags.FindAsync(id);
-                var postTag = new PostTag() { PostId = post.Id, TagId = tag.Id };
-
+                var postTag = new PostTag() { PostId = post.Id, TagId = t };
                 _context.PostTags.Add(postTag);
             }
 
