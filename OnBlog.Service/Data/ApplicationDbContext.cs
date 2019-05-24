@@ -20,5 +20,6 @@ namespace OnBlog.Service.Data
         public DbSet<Tag> Tags { get; set; }
         public DbSet<PostTag> PostTags { get; set; }
         public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Page> Pages { get; set; }
     }
 }
