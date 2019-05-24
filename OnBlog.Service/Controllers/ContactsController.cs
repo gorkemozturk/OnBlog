@@ -76,6 +76,8 @@ namespace OnBlog.Service.Controllers
         [HttpPost]
         public async Task<ActionResult<Contact>> PostContact(Contact contact)
         {
+            contact.CreatedAt = DateTime.Now;
+
             _context.Contacts.Add(contact);
             await _context.SaveChangesAsync();
 
